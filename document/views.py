@@ -10,6 +10,7 @@ from spacy.matcher import Matcher
 
 nlp = spacy.load('en_core_web_sm')
 
+
 # def preprocess_text(text):
 #     # 1. Lowercasing
 #     text = text.lower()
@@ -38,12 +39,15 @@ nlp = spacy.load('en_core_web_sm')
 
 #     return ' '.join(tokens)
 
+
 def preprocess_text(text):
+    """
+    accept text and return Clean and preprocess text data.
+    """
     # Ensure text is a string
     if not isinstance(text, str):
         raise ValueError("Input text must be a string.")
-
-    # Step 1: Lowercasing
+    # Step 1: Lowercase
     text = text.lower()
 
     # Step 2: Removing punctuation and special characters
@@ -63,54 +67,52 @@ def preprocess_text(text):
     # Returning preprocessed text as a single string
     return ' '.join(tokens)
 
-
-def extract_entities(text):
-    doc = nlp(text)
-
-    entities = {
-        "name": None,
-        "contact_info": {"email": [], "phone": []},
-        "education": [],
-        "work_experience": [],
-        "skills": [],
-        "certifications": []
-    }
-
-    # 1. Extracting standard entities
-    for ent in doc.ents:
-        if ent.label_ == "PERSON" and not entities["name"]:
-            entities["name"] = ent.text
-        elif ent.label_ == "ORG" and "university" in ent.text.lower():
-            entities["education"].append(ent.text)
-        elif ent.label_ == "ORG" and not "university" in ent.text.lower():
-            entities["work_experience"].append(ent.text)
-        elif ent.label_ == "SKILL":  # Custom label; may need customization
-            entities["skills"].append(ent.text)
-        elif ent.label_ == "CERTIFICATION":  # Custom label; may need customization
-            entities["certifications"].append(ent.text)
-
-    # 2. Extracting custom entities like email and phone number
-    matcher = Matcher(nlp.vocab)
-
-    # Email pattern
-    email_pattern = [{"TEXT": {"REGEX": r"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$"}}]
-    matcher.add("EMAIL", [email_pattern])
-
-    # Phone number pattern
-    phone_pattern = [{"TEXT": {"REGEX": r"(\(?\+?[0-9]*\)?)?[0-9_\- \(\)]+"}}]
-    matcher.add("PHONE", [phone_pattern])
-
-    matches = matcher(doc)
-    for match_id, start, end in matches:
-        span = doc[start:end]
-        label = nlp.vocab.strings[match_id]
-        if label == "EMAIL":
-            entities["contact_info"]["email"].append(span.text)
-        elif label == "PHONE":
-            entities["contact_info"]["phone"].append(span.text)
-
-    return entities
-
+# def extract_entities(text):
+#     doc = nlp(text)
+#
+#     entities = {
+#         "name": None,
+#         "contact_info": {"email": [], "phone": []},
+#         "education": [],
+#         "work_experience": [],
+#         "skills": [],
+#         "certifications": []
+#     }
+#
+#     # 1. Extracting standard entities
+#     for ent in doc.ents:
+#         if ent.label_ == "PERSON" and not entities["name"]:
+#             entities["name"] = ent.text
+#         elif ent.label_ == "ORG" and "university" in ent.text.lower():
+#             entities["education"].append(ent.text)
+#         elif ent.label_ == "ORG" and not "university" in ent.text.lower():
+#             entities["work_experience"].append(ent.text)
+#         elif ent.label_ == "SKILL":  # Custom label; may need customization
+#             entities["skills"].append(ent.text)
+#         elif ent.label_ == "CERTIFICATION":  # Custom label; may need customization
+#             entities["certifications"].append(ent.text)
+#
+#     # 2. Extracting custom entities like email and phone number
+#     matcher = Matcher(nlp.vocab)
+#
+#     # Email pattern
+#     email_pattern = [{"TEXT": {"REGEX": r"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$"}}]
+#     matcher.add("EMAIL", [email_pattern])
+#
+#     # Phone number pattern
+#     phone_pattern = [{"TEXT": {"REGEX": r"(\(?\+?[0-9]*\)?)?[0-9_\- \(\)]+"}}]
+#     matcher.add("PHONE", [phone_pattern])
+#
+#     matches = matcher(doc)
+#     for match_id, start, end in matches:
+#         span = doc[start:end]
+#         label = nlp.vocab.strings[match_id]
+#         if label == "EMAIL":
+#             entities["contact_info"]["email"].append(span.text)
+#         elif label == "PHONE":
+#             entities["contact_info"]["phone"].append(span.text)
+#
+#     return entities
 
 
 def extract_text_from_docx_file(doc):
@@ -122,6 +124,7 @@ def extract_text_from_docx_file(doc):
         return '\n'.join(full_text)
     except Exception as e:
         raise ValidationError("The uploaded file is not a valid DOCX document.")
+
 
 # def extract_text_from_pdf_file(pdf):
 #     try:
@@ -142,8 +145,6 @@ def extract_text_from_pdf_file(pdf):
         raise ValidationError("The uploaded file is not a valid PDF document.")
 
 
-
-
 def home(request):
     if request.method == 'POST':
         file = request.FILES.get('file')
@@ -160,20 +161,19 @@ def home(request):
         elif file_ext == 'pdf':
             try:
                 text = extract_text_from_pdf_file(file)
-                new_text=preprocess_text(text)
-                print(new_text)
+                new_text = preprocess_text(text)
+                # print(new_text)
             except ValidationError as ve:
                 return render(request, 'document/index.html', {'error': str(ve)})
         else:
-            return render(request, 'document/index.html', {'error': 'Unsupported file format. Please upload a DOCX or PDF file.'})
+            return render(request, 'document/index.html',
+                          {'error': 'Unsupported file format. Please upload a DOCX or PDF file.'})
 
-          # Preprocess the text
+        # Preprocess the text
         cleaned_text = preprocess_text(text)
 
         # Extract entities
         # entities = extract_entities(cleaned_text)
-
-
 
         context = {
             'doc_text': text,

@@ -28,6 +28,8 @@ def preprocess_text(text):
 
     # Step 3: Tokenization, Stop word removal, and Lemmatization
     doc = nlp(text)
+    print('doc')
+    print(doc)
     tokens = []
     for token in doc:
         if not token.is_stop:
@@ -36,6 +38,8 @@ def preprocess_text(text):
     # If tokens is empty after preprocessing
     if not tokens:
         raise ValueError("Text preprocessing resulted in no tokens.")
+
+    print(tokens)
 
     # Returning preprocessed text as a single string
     return ' '.join(tokens)
@@ -56,6 +60,8 @@ def extract_text_from_pdf_file(pdf):
         # Use BytesIO to read the file in binary mode
         pdf_data = pdf.read()
         pdf_io = BytesIO(pdf_data)
+        print('pdf file')
+        print(pdf_io)
         # Extract text using pdfminer
         text = extract_text(pdf_io)
         return text
@@ -102,6 +108,6 @@ def home(request):
 
     return render(request, 'document/index.html')
 
-#
+
 # def clead(request):
 #     return render(request,'document/home.html')

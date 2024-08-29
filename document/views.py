@@ -15,7 +15,7 @@ nlp = spacy.load('en_core_web_sm')
 
 def preprocess_text(text):
     """
-    accept text and return Clean and preprocess text data.
+      accept text and return Clean and preprocess text data.
     """
     # Ensure text is a string
     if not isinstance(text, str):
@@ -104,7 +104,7 @@ def home(request):
             'entities': cleaned_text
         }
 
-        return render(request, 'document/index.html', context)
+        return render(request, 'document/home', context)
 
     return render(request, 'document/index.html')
 
